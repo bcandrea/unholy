@@ -204,7 +204,7 @@ class Pyasm
     build_list 1
     inplace_add
   end
-  def opt_plus
+  def opt_plus(arg)
     binary_add
   end
   def putnil
@@ -216,6 +216,18 @@ class Pyasm
   end
   def putobject(obj)
     load_const(obj)
+  end
+  def trace(flag)
+  end
+  def tostring
+  end
+  def concatstrings(str)
+    putstring(str)
+  end
+  def putspecialobject(obj)
+  end
+  def setconstant(const)
+    store_name(const)
   end
   def message(meth, op_argc, blockiseq, op_flag, ic)
     # args = @stack.slice! -op_argc, op_argc
@@ -342,9 +354,10 @@ class Pyasm
 
   def load_iseq iseq
     iseq = iseq.to_a
-    @varsyms += iseq[8].reverse
+    @varsyms += iseq[10].reverse
 
-    iseq[11].each do |inst|
+    iseq[13].each do |inst|
+      puts inst.inspect
       case inst
       when Integer # line no
         line inst
@@ -359,10 +372,10 @@ class Pyasm
   end
   def eval src
     begin
-      iseq = VM::InstructionSequence.compile(src)
+      iseq = RubyVM::InstructionSequence.compile(src)
       load_iseq iseq
     rescue NameError => e
-      puts "*** Are you sure you're running Ruby 1.9?"
+      puts "*** Are you sure you are running Ruby 1.9?"
       throw e
     end
   end
@@ -428,7 +441,8 @@ class Pyasm
   def compile(fname)
     # dump the bytecode
     File.open(fname, "wb") do |f|
-      f << "\xB3\xF2\r\n" # magic number for python 2.5
+      #f << "\xB3\xF2\r\n" # magic number for python 2.5
+      f << "\x03\xF3\r\n" # magic number for python 2.7
       f << Time.now.to_i.to_plong
 
       # code object
